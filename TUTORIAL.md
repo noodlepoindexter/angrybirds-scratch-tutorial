@@ -2,7 +2,7 @@
 
 ### (The Angry Birds "pull back and let go" mechanic)
 
-Hi! By the end of this tutorial you'll have a dinosaur you can pull back with
+By the end of this tutorial you'll have a dinosaur you can pull back with
 your mouse, aim, and fling across the screen — and it'll make a rising
 *stretching* whine as you pull back, plus a thump when it lands.
 
