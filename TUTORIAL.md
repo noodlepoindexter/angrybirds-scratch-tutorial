@@ -185,53 +185,6 @@ forever
     start sound [Chomp v]
 ```
 
-### Why `forever` is the clever part
-
-This is the best idea in the whole project, so let's slow down on it.
-
-The obvious way to build a launcher is `when [a] key pressed`. But that has an
-annoying problem — and it's a genuine Scratch quirk worth knowing:
-
-> **`when [key] pressed` will NOT restart a script that's already running.** It
-> just ignores you. So if the dinosaur is still mid-flight, or still sitting
-> there waiting for your click, pressing the key again does absolutely nothing.
-> The launcher feels broken and you can't figure out why.
-
-The `forever` loop sidesteps that entirely. Look at the shape of it: the **last**
-thing in the loop is the landing thump, and then it wraps around to `go to x:-99
-y:-59` — the reload. The launcher **puts itself back together after every shot**.
-
-So there's no key to press, no script to restart, and no way to get stuck. Click,
-drag, release, repeat. The player can fire as fast as they can click.
-
-This is a pattern you'll use constantly: **a `forever` loop with `wait until`
-blocks inside it** is how you build something that handles one event after
-another, in order, over and over. The `wait until` blocks are the pause points
-where the loop sits politely and does nothing until the player acts.
-
-### `broadcast` — running two things at once
-
-**`broadcast [launchSound v]`** is a message. It shouts "launchSound!" to the
-whole project, and any script with a matching `when I receive` hat wakes up and
-starts running.
-
-The crucial detail: the plain `broadcast` block **does not wait**. It fires the
-message and immediately moves to the next block. So the instant you press the
-mouse:
-
-- the **launch script** carries on to `wait until <not <mouse down?>>`
-- the **sound script** starts whining
-
-...and those two run **side by side, at the same time.**
-
-> **Careful:** there's also a `broadcast [ ] and wait` block. If you use that one
-> by mistake, your launch script will freeze until the sound script completely
-> finishes — and since the sound script only finishes when you *release* the
-> mouse, you'd get a weird stutter. Use plain `broadcast` here.
->
-> This is called **concurrency** — two things happening at once. It's a big deal
-> in real programming, and Scratch lets you do it by just... making two scripts.
-
 ### The flight
 
 ```
@@ -249,43 +202,12 @@ Then the loop is the physics, and there are only three lines of it:
   resistance. We're ignoring it, and honestly it feels better this way.)
 - **`set y to (y position + speedY)`** — drift vertically.
 - **`change speedY by gravity`** — **this one line is gravity.** Since `gravity`
-  is `-1`, `speedY` shrinks by 1 every single frame. Watch what that does:
-
-| Frame | `speedY` | What you see |
-|---|---|---|
-| 1 | 10 | rising fast |
-| 5 | 6 | still rising, slower |
-| 10 | 1 | almost stopped — top of the arc |
-| 11 | 0 | the peak |
-| 15 | -4 | falling |
-| 20 | -9 | falling fast |
-
-You never told it to make an arc. You just said "lose a little upward speed every
-frame," and the arc *appears*. That's the whole idea behind game physics, and
-you've now written it.
-
-**Why `repeat (77)`?** That's your **flight time**. The loop runs about 30 times
-a second, so 77 frames is roughly two and a half seconds of flight, and then the
-shot is over no matter what. It's a nice round-ish number that someone picked
-because it felt right — which is a completely legitimate way to tune a game.
-
-Make it `repeat (200)` and shots hang around much longer. Make it `repeat (20)`
-and the dinosaur barely gets going before it resets.
-
-> **A tidier option:** try swapping `repeat (77)` for
-> `repeat until <touching [edge v]?>`. Then the flight ends when the dinosaur
-> actually hits something instead of when a timer runs out. Both are fine — the
-> counter is simpler, the `touching` version is smarter.
-
-**`start sound [Chomp v]`** at the very end is the landing thump, played once the
-flight finishes. Then the loop wraps around and reloads.
-
+  is `-1`, `speedY` shrinks by 1 every single frame.
 ---
 
 ## Part 5: The stretch sound
 
-This is its own little script on the dinosaur. It's only three blocks, and it
-does something genuinely cool:
+This is its own little script on the dinosaur
 
 ```
 when I receive [launchSound v]
@@ -297,26 +219,6 @@ when I receive [launchSound v]
 
     set [pitch v] effect to (0)
 ```
-
-**`repeat until <not <mouse down?>>`** — "keep doing this the whole time they're
-holding the button down." Read it out loud: *repeat until NOT mouse down*. It's a
-double negative, which is awkward, but it's how Scratch says "while."
-
-**`start sound [Chomp v]`** fires a short sound every frame — about 30 times a
-second. Normally that would be a horrible mess, and here's the trick that turns
-it into something good:
-
-**`change [pitch v] effect by (10)`** nudges the pitch up a notch every single
-frame. So each copy of the sound is slightly higher than the one before it, and
-they pile up into one continuous **rising whine**. The longer you hold, the
-higher and tighter it gets — exactly like a rubber band stretching.
-
-That's the whole effect: a boring sound, fired rapidly, with the pitch climbing.
-No special audio tricks. You can hear *tension* in it.
-
-> **Try this:** change the `10` to `3` for a slow, heavy, creaky stretch. Change
-> it to `40` for a cartoonish *zip*. This one number completely changes the
-> personality of your slingshot.
 
 ### ⚠️ The sticky-pitch trap
 
@@ -343,111 +245,3 @@ The fix is the two resets:
 > If your project is already getting squeakier every shot, this is why. Drop in
 > those two blocks and it's fixed.
 
----
-
-## Part 6: Try it, then break it
-
-Click the green flag. Press and hold the mouse button, drag away from the
-dinosaur, and let go. Then do it again — notice you never had to reset anything.
-
-Now go mess with the dials. This is the actual point of the exercise:
-
-| Change this | To this | And see |
-|---|---|---|
-| `launchPower` | `0.3` | A cannon |
-| `launchPower` | `0.02` | A very sad dinosaur |
-| `gravity` | `-0.3` | Moon gravity, long floaty arcs |
-| `gravity` | `-3` | A heavy rock |
-| `gravity` | `0` | No gravity — it flies forever in a straight line |
-| `gravity` | `1` | Upside-down gravity. It flies *up* and never comes back |
-| `repeat (77)` | `repeat (200)` | Much longer flights |
-| the `144` limit | `250` | A giant slingshot (change all three!) |
-| `change pitch by (10)` | `(3)` | A slow, heavy creak |
-| `change pitch by (10)` | `(40)` | A cartoon *zip* |
-
-Make a prediction *before* you click. Being wrong is where the learning is.
-
----
-
-## Troubleshooting
-
-**It flies toward my mouse instead of away.**
-Your subtraction is backwards. It needs to be
-`(x position of AngryBird) - (x position)`, with the dinosaur first.
-
-**Everything sounds squeaky, and it gets worse every shot.**
-You're missing the `set [pitch v] effect to (0)` blocks. See the sticky-pitch
-trap in Part 5.
-
-**The stretch sound keeps whining after I let go.**
-Check that `change [pitch v] effect by (10)` is **inside** the `repeat until`
-loop and that the loop's condition is `<not <mouse down?>>`. If the condition is
-just `<mouse down?>`, the loop exits instantly and then never stops.
-
-**It launches the moment I click, with no stretch.**
-Your `wait until <not <mouse down?>>` is missing, or it's above the broadcast
-instead of below it. Order matters: wait for the press, broadcast, *then* wait
-for the release.
-
-**It only fires once, then freezes.**
-Something in your `forever` loop never finishes. The usual culprit is a
-`wait until` that can never come true, or `broadcast and wait` where you wanted
-plain `broadcast`.
-
-**It gets stuck on the edge of the screen.**
-That's normal — Scratch won't let sprites leave the stage, so it pins there while
-`repeat (77)` finishes counting. Wait a moment and it reloads on its own. The
-`repeat until <touching [edge v]?>` swap from Part 4 fixes it properly.
-
-**`difx` and `dify` stay at 0.**
-Your Basketball script isn't running (click the green flag), or you made the
-variables "For this sprite only" instead of "For all sprites." If it's the second
-one, delete them and remake them — the dinosaur can't see the Basketball's
-private variables.
-
-**There are random loose blocks floating in my code area.**
-Totally fine, and you probably have a few: a lone `direction` block, a
-`think (direction of Wall)`, a `(backdrop # of Stage)`. Those are leftovers from
-poking at things to see what they report — a completely normal way to explore.
-They're not attached to any hat block, so they never run. Right-click → Delete
-when you want to clean up. (Clicking one is a handy trick, by the way: click any
-reporter block and Scratch shows you its value in a little bubble.)
-
----
-
-## What's next: the Wall
-
-There's a **Wall** sprite in the project that doesn't do anything yet. That's the
-natural next step — the dinosaur flies, but nothing happens when it *arrives*.
-
-The block you'll want is `<touching [Wall v]?>`, and the place to put it is
-inside the flight loop. Something shaped like:
-
-```
-    repeat until <<touching [Wall v]?> or <touching [edge v]?>>
-        set x to ((x position) + (speedX))
-        ...
-```
-
-...and then do something fun when the loop ends. That's a whole project of its
-own, though. Get the launching feeling right first.
-
----
-
-## What you learned
-
-Quietly, in about 25 blocks, you did all of this:
-
-- Split motion into **x and y components** — the foundation of all 2D game movement
-- **Clamped** a value to a maximum while preserving its direction
-- Made **gravity** out of one `change by` block
-- Built a **self-resetting loop** (`forever` + `wait until`) that handles events
-  in order and never gets stuck
-- Used a **broadcast** to run two scripts **at the same time**
-- Separated your **settings** from your **action code**
-- Mapped a game value onto **sound pitch** for feedback the player *feels*
-
-That last one is real game design. The pitch rising as you pull isn't decoration
-— it tells the player how hard they're about to shoot without a single number on
-screen. Good games do this constantly, and most people never notice. Now you
-will.
