@@ -17,8 +17,7 @@ We'll build it in four pieces:
 3. **The Launcher** — the dinosaur, which reloads, waits, and flies
 4. **The Sound** — a separate script that whines while you stretch
 
-Read the whole thing once, then build it. Don't skip the "Why?" boxes — those are
-the parts that make this click.
+Read the whole thing once, then build it. 
 
 ---
 
